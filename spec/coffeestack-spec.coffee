@@ -1,6 +1,6 @@
 fs = require 'fs'
 path = require 'path'
-temp = require 'temp'
+temp = require './helpers/temp'
 {convertLine, convertStackTrace, getCacheDirectory, setCacheDirectory} = require '../index'
 
 temp.track()
@@ -37,22 +37,16 @@ describe 'CoffeeStack', ->
 
   describe 'convertStackTrace(stackTrace)', ->
     it 'maps JavaScript lines to their CoffeeScript lines', ->
-      Test = require './fixtures/test.coffee'
-      stackTrace = null
-      try
-        new Test().fail()
-      catch error
-        stackTrace = error.stack
+      jsPath = path.join(__dirname, 'fixtures', 'js-with-map.js')
+      coffeePath = path.join(__dirname, 'fixtures', 'js-with-map.coffee')
+      stackTrace = "Error: this is an error\n    at fail (#{jsPath}:9:14)"
 
-      stackTrace = stackTrace.split('\n')[0..1].join('\n')
-      expect(convertStackTrace(stackTrace)).toBe """
-        Error: this is an error
-          at Test.module.exports.Test.fail (#{__dirname}/fixtures/test.coffee:10:15)"""
+      expect(convertStackTrace(stackTrace)).toBe "Error: this is an error\n    at fail (#{coffeePath}:3:17)"
 
   describe 'source map caching', ->
     it 'stores compiled source maps and uses them on subsequeunt calls', ->
-      CoffeeScript = require 'coffee-script'
-      spyOn(CoffeeScript, 'compile').andCallThrough()
+      CoffeeScript = require 'coffeescript'
+      spyOn(CoffeeScript, 'compile').and.callThrough()
 
       cacheDir = temp.mkdirSync('coffeestack-cache')
       setCacheDirectory(cacheDir)
@@ -60,10 +54,10 @@ describe 'CoffeeStack', ->
 
       filePath = path.join(__dirname, 'fixtures', 'test.coffee')
       expect(convertLine(filePath, 4, 2)).toEqual {line: 1, column: 0, source: filePath}
-      expect(CoffeeScript.compile.callCount).toBe 1
+      expect(CoffeeScript.compile.calls.count()).toBe 1
 
       expect(convertLine(filePath, 4, 2)).toEqual {line: 1, column: 0, source: filePath}
-      expect(CoffeeScript.compile.callCount).toBe 1
+      expect(CoffeeScript.compile.calls.count()).toBe 1
 
   it "prevents errors from being thrown by CoffeeScript's Error.prepareStackTrace", ->
     convertStackTrace """

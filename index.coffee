@@ -1,5 +1,5 @@
 crypto = require 'crypto'
-fs = require 'fs-plus'
+fs = require 'fs'
 path = require 'path'
 
 CoffeeScriptVersion = null # defer until used
@@ -12,11 +12,11 @@ getCachePath = (code) ->
   return unless cachePath
 
   digest = crypto.createHash('sha1').update(code, 'utf8').digest('hex')
-  CoffeeScriptVersion ?= require('coffee-script/package.json').version
+  CoffeeScriptVersion ?= require('coffeescript/package.json').version
   path.join(cachePath, CoffeeScriptVersion, "#{digest}.json")
 
 getCachedSourceMap = (codeCachePath) ->
-  if fs.isFileSync(codeCachePath)
+  if isFileSync(codeCachePath)
     try
       return fs.readFileSync(codeCachePath, 'utf8')
 
@@ -25,12 +25,13 @@ getCachedSourceMap = (codeCachePath) ->
 writeSourceMapToCache = (codeCachePath, sourceMap) ->
   if codeCachePath
     try
+      fs.mkdirSync(path.dirname(codeCachePath), {recursive: true})
       fs.writeFileSync(codeCachePath, sourceMap)
 
   return
 
 loadCoffeeScript = ->
-  coffee = require 'coffee-script'
+  coffee = require 'coffeescript'
 
   # Work around for https://github.com/jashkenas/coffeescript/issues/3890
   coffeePrepareStackTrace = Error.prepareStackTrace
@@ -50,9 +51,17 @@ compileSourceMap = (code, filePath, codeCachePath) ->
   v3SourceMap
 
 getSourceMapPosition = (sourceMapContents, line, column)->
-  SourceMapConsumer ?= require('source-map').SourceMapConsumer
+  SourceMapConsumer ?= require('source-map-js').SourceMapConsumer
+  if typeof sourceMapContents is 'string'
+    sourceMapContents = JSON.parse(sourceMapContents)
   sourceMap = new SourceMapConsumer(sourceMapContents)
   sourceMap.originalPositionFor({line, column})
+
+isFileSync = (filePath) ->
+  try
+    fs.statSync(filePath).isFile()
+  catch
+    false
 
 convertLine = (filePath, line, column, sourceMaps={}) ->
   try
@@ -68,7 +77,7 @@ convertLine = (filePath, line, column, sourceMaps={}) ->
 
     if sourceMapContents
       sourceMaps[filePath] = sourceMapContents
-      position = getSourceMapPosition(sourceMapContents, line, column)
+      position = getSourceMapPosition(sourceMapContents, Number(line), Number(column))
       if position.line? and position.column?
         if position.source and position.source isnt '.'
           source = path.resolve(filePath, '..',  position.source)

@@ -1,16 +1,17 @@
 {
-  "name": "coffeestack",
-  "version": "1.2.0",
-  "description": "CoffeeScript stack trace converter",
+  "name": "@lumine-code/coffeestack",
+  "version": "2.0.0",
+  "description": "Converts JavaScript stack traces to their original CoffeeScript locations for Lumine tooling.",
   "main": "./index.js",
   "scripts": {
-    "prepublish": "grunt clean lint coffee",
-    "test": "grunt test"
+    "build": "coffee --compile index.coffee",
+    "pretest": "npm run build",
+    "test": "jasmine",
+    "prepare": "npm run build"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/kevinsawicki/coffeestack.git"
-  },
+  "repository": "https://github.com/lumine-code/coffeestack",
+  "bugs": "https://github.com/lumine-code/coffeestack/issues",
+  "homepage": "https://github.com/lumine-code/coffeestack/",
   "keywords": [
     "CoffeeScript",
     "JavaScript",
@@ -19,27 +20,22 @@
     "trace",
     "source maps"
   ],
-  "author": {
-    "name": "Kevin Sawicki",
-    "email": "kevinsawicki@gmail.com"
+  "author": "lumine-code",
+  "license": "BSD-3-Clause",
+  "publishConfig": {
+    "access": "public"
   },
-  "license": "BSD",
-  "bugs": {
-    "url": "https://github.com/kevinsawicki/coffeestack/issues"
+  "engines": {
+    "node": ">=20"
   },
+  "files": [
+    "index.js"
+  ],
   "dependencies": {
-    "coffee-script": "~1.8.0",
-    "fs-plus": "^3.1.1",
-    "source-map": "~0.1.43"
+    "coffeescript": "2.7.0",
+    "source-map-js": "^1.2.1"
   },
   "devDependencies": {
-    "grunt": "~0.4.1",
-    "grunt-cli": "~0.1.9",
-    "grunt-coffeelint": "0.0.7",
-    "grunt-contrib-coffee": "~0.7.0",
-    "grunt-shell": "~0.3.0",
-    "jasmine-focused": "1.x",
-    "rimraf": "~2.2.0",
-    "temp": "^0.8.1"
+    "jasmine": "^6.3.0"
   }
 }
