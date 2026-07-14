@@ -4,10 +4,7 @@
   "description": "Converts JavaScript stack traces to their original CoffeeScript locations for Lumine tooling.",
   "main": "./index.js",
   "scripts": {
-    "build": "coffee --compile index.coffee",
-    "pretest": "npm run build",
-    "test": "jasmine",
-    "prepare": "npm run build"
+    "test": "jasmine"
   },
   "repository": "https://github.com/lumine-code/coffeestack",
   "bugs": "https://github.com/lumine-code/coffeestack/issues",
