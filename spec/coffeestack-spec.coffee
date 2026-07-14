@@ -6,6 +6,9 @@ temp = require './helpers/temp'
 temp.track()
 
 describe 'CoffeeStack', ->
+  afterEach ->
+    setCacheDirectory(null)
+
   describe 'convertLine(filePath, line, column)', ->
     describe 'when the path is to a CoffeeScript file', ->
       it 'converts the JavaScript line and column to a valid CoffeeScript line and column', ->
@@ -35,6 +38,25 @@ describe 'CoffeeStack', ->
           filePath = path.join(__dirname, 'fixtures', 'no-map.js')
           expect(convertLine(filePath, 1, 1)).toBeNull()
 
+    it 'uses a caller-provided source map without reading it from disk', ->
+      filePath = path.join(__dirname, 'fixtures', 'virtual.js')
+      sourceMap = fs.readFileSync(path.join(__dirname, 'fixtures', 'js-with-map.js.map'), 'utf8')
+
+      expect(convertLine(filePath, 9, 14, "#{filePath}": sourceMap)).toEqual
+        line: 3
+        column: 17
+        source: path.join(__dirname, 'fixtures', 'js-with-map.coffee')
+
+    it 'reuses a generated source map supplied cache object', ->
+      CoffeeScript = require 'coffeescript'
+      spyOn(CoffeeScript, 'compile').and.callThrough()
+      sourceMaps = {}
+      filePath = path.join(__dirname, 'fixtures', 'test.coffee')
+
+      expect(convertLine(filePath, 4, 2, sourceMaps)).toEqual {line: 1, column: 0, source: filePath}
+      expect(convertLine(filePath, 10, 13, sourceMaps)).toEqual {line: 7, column: 4, source: filePath}
+      expect(CoffeeScript.compile.calls.count()).toBe 1
+
   describe 'convertStackTrace(stackTrace)', ->
     it 'maps JavaScript lines to their CoffeeScript lines', ->
       jsPath = path.join(__dirname, 'fixtures', 'js-with-map.js')
@@ -42,6 +64,24 @@ describe 'CoffeeStack', ->
       stackTrace = "Error: this is an error\n    at fail (#{jsPath}:9:14)"
 
       expect(convertStackTrace(stackTrace)).toBe "Error: this is an error\n    at fail (#{coffeePath}:3:17)"
+
+    it 'preserves unrecognized and unmappable stack frames', ->
+      missingPath = path.join(__dirname, 'fixtures', 'missing.js')
+      stackTrace = "Error: this is an error\n    at direct.js:1:2\n    at missing (#{missingPath}:3:4)"
+
+      expect(convertStackTrace(stackTrace)).toBe stackTrace
+
+    it 'maps every convertible frame in a stack trace', ->
+      jsPath = path.join(__dirname, 'fixtures', 'js-with-map.js')
+      coffeePath = path.join(__dirname, 'fixtures', 'js-with-map.coffee')
+      stackTrace = "Error: this is an error\n    at first (#{jsPath}:9:14)\n    at second (#{jsPath}:9:14)"
+
+      expect(convertStackTrace(stackTrace)).toBe "Error: this is an error\n    at first (#{coffeePath}:3:17)\n    at second (#{coffeePath}:3:17)"
+
+    it 'returns falsy stack values unchanged', ->
+      expect(convertStackTrace(null)).toBeNull()
+      expect(convertStackTrace(undefined)).toBeUndefined()
+      expect(convertStackTrace('')).toBe ''
 
   describe 'source map caching', ->
     it 'stores compiled source maps and uses them on subsequeunt calls', ->
