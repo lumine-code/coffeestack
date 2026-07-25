@@ -10,12 +10,12 @@
   "bugs": "https://github.com/lumine-code/coffeestack/issues",
   "homepage": "https://github.com/lumine-code/coffeestack/",
   "keywords": [
-    "CoffeeScript",
-    "JavaScript",
+    "coffeescript",
+    "javascript",
     "stack",
     "stacktrace",
     "trace",
-    "source maps"
+    "source-map"
   ],
   "author": "lumine-code",
   "license": "MIT AND BSD-3-Clause",
