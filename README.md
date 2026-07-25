@@ -1,6 +1,6 @@
-# @lumine-code/coffeestack
+# coffeestack
 
-Converts JavaScript stack traces to their original CoffeeScript locations for Lumine tooling.
+Converts JavaScript stack traces to their original CoffeeScript locations.
 
 ## Features
 
