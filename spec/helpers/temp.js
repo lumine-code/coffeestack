@@ -1,17 +1,16 @@
-const crypto = require('crypto')
-const fs = require('fs')
-const os = require('os')
-const path = require('path')
+const fs = require("fs");
+const os = require("os");
+const path = require("path");
 
-const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'coffeestack-spec-'))
+const directory = fs.mkdtempSync(path.join(os.tmpdir(), "coffeestack-spec-"));
 
-process.once('exit', () => {
-  fs.rmSync(directory, {recursive: true, force: true})
-})
+process.once("exit", () => {
+  fs.rmSync(directory, { recursive: true, force: true });
+});
 
 module.exports = {
-  mkdirSync(prefix = 'temp-') {
-    return fs.mkdtempSync(path.join(directory, prefix))
+  mkdirSync(prefix = "temp-") {
+    return fs.mkdtempSync(path.join(directory, prefix));
   },
-  track() {}
-}
+  track() {},
+};

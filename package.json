@@ -4,7 +4,9 @@
   "description": "Converts JavaScript stack traces to their original CoffeeScript locations.",
   "main": "./index.js",
   "scripts": {
-    "test": "jasmine"
+    "test": "jasmine",
+    "lint": "eslint . --max-warnings 0 && prettier --check .",
+    "format": "prettier --write ."
   },
   "repository": "https://github.com/lumine-code/coffeestack",
   "bugs": "https://github.com/lumine-code/coffeestack/issues",
@@ -33,6 +35,12 @@
     "source-map-js": "^1.2.1"
   },
   "devDependencies": {
-    "jasmine": "^6.3.0"
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.8.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-n": "^18.2.2",
+    "globals": "^17.9.0",
+    "jasmine": "^6.3.0",
+    "prettier": "^3.9.6"
   }
 }

@@ -18,14 +18,14 @@ npm install @lumine-code/coffeestack
 ## Usage
 
 ```js
-const {convertStackTrace, setCacheDirectory} = require('@lumine-code/coffeestack')
+const { convertStackTrace, setCacheDirectory } = require("@lumine-code/coffeestack");
 
-setCacheDirectory('/path/to/cache')
+setCacheDirectory("/path/to/cache");
 
 try {
-  throw new Error('example')
+  throw new Error("example");
 } catch (error) {
-  console.error(convertStackTrace(error.stack))
+  console.error(convertStackTrace(error.stack));
 }
 ```
 

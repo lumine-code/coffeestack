@@ -1,12 +1,8 @@
 {
   "spec_dir": "spec",
-  "spec_files": [
-    "**/*[sS]pec.js"
-  ],
+  "spec_files": ["**/*[sS]pec.js"],
   "helpers": [],
-  "requires": [
-    "./node_modules/coffeescript/register.js"
-  ],
+  "requires": ["./node_modules/coffeescript/register.js"],
   "env": {
     "stopSpecOnExpectationFailure": false,
     "random": false

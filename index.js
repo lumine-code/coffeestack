@@ -1,11 +1,26 @@
-(function() {
-  var CoffeeScript, CoffeeScriptVersion, SourceMapConsumer, cachePath, compileSourceMap, convertLine, convertStackTrace, crypto, fs, getCachePath, getCachedSourceMap, getSourceMapPosition, isFileSync, loadCoffeeScript, path, writeSourceMapToCache;
+(function () {
+  var CoffeeScript,
+    CoffeeScriptVersion,
+    SourceMapConsumer,
+    cachePath,
+    compileSourceMap,
+    convertLine,
+    convertStackTrace,
+    crypto,
+    fs,
+    getCachePath,
+    getCachedSourceMap,
+    getSourceMapPosition,
+    isFileSync,
+    loadCoffeeScript,
+    path,
+    writeSourceMapToCache;
 
-  crypto = require('crypto');
+  crypto = require("crypto");
 
-  fs = require('fs');
+  fs = require("fs");
 
-  path = require('path');
+  path = require("path");
 
   CoffeeScriptVersion = null; // defer until used
 
@@ -15,49 +30,48 @@
 
   cachePath = null;
 
-  getCachePath = function(code) {
+  getCachePath = function (code) {
     var digest;
     if (!cachePath) {
       return;
     }
-    digest = crypto.createHash('sha1').update(code, 'utf8').digest('hex');
+    digest = crypto.createHash("sha1").update(code, "utf8").digest("hex");
     if (CoffeeScriptVersion == null) {
-      CoffeeScriptVersion = require('coffeescript/package.json').version;
+      CoffeeScriptVersion = require("coffeescript/package.json").version;
     }
     return path.join(cachePath, CoffeeScriptVersion, `${digest}.json`);
   };
 
-  getCachedSourceMap = function(codeCachePath) {
+  getCachedSourceMap = function (codeCachePath) {
     if (isFileSync(codeCachePath)) {
       try {
-        return fs.readFileSync(codeCachePath, 'utf8');
-      } catch (error1) {}
+        return fs.readFileSync(codeCachePath, "utf8");
+      } catch {}
     }
   };
 
-  writeSourceMapToCache = function(codeCachePath, sourceMap) {
+  writeSourceMapToCache = function (codeCachePath, sourceMap) {
     if (codeCachePath) {
       try {
         fs.mkdirSync(path.dirname(codeCachePath), {
-          recursive: true
+          recursive: true,
         });
         fs.writeFileSync(codeCachePath, sourceMap);
-      } catch (error1) {}
+      } catch {}
     }
   };
 
-  loadCoffeeScript = function() {
+  loadCoffeeScript = function () {
     var coffee, coffeePrepareStackTrace;
-    coffee = require('coffeescript');
+    coffee = require("coffeescript");
     // Work around for https://github.com/jashkenas/coffeescript/issues/3890
     coffeePrepareStackTrace = Error.prepareStackTrace;
     if (coffeePrepareStackTrace != null) {
-      Error.prepareStackTrace = function(error, stack) {
-        var coffeeError;
+      Error.prepareStackTrace = function (error, stack) {
         try {
           return coffeePrepareStackTrace(error, stack);
-        } catch (error1) {
-          coffeeError = error1;
+        } catch {
+          // CoffeeScript's own handler failed; the raw stack is still useful.
           return stack;
         }
       };
@@ -65,48 +79,48 @@
     return coffee;
   };
 
-  compileSourceMap = function(code, filePath, codeCachePath) {
+  compileSourceMap = function (code, filePath, codeCachePath) {
     var v3SourceMap;
     if (CoffeeScript == null) {
       CoffeeScript = loadCoffeeScript();
     }
-    ({v3SourceMap} = CoffeeScript.compile(code, {
+    ({ v3SourceMap } = CoffeeScript.compile(code, {
       sourceMap: true,
-      filename: filePath
+      filename: filePath,
     }));
     writeSourceMapToCache(codeCachePath, v3SourceMap);
     return v3SourceMap;
   };
 
-  getSourceMapPosition = function(sourceMapContents, line, column) {
+  getSourceMapPosition = function (sourceMapContents, line, column) {
     var sourceMap;
     if (SourceMapConsumer == null) {
-      SourceMapConsumer = require('source-map-js').SourceMapConsumer;
+      SourceMapConsumer = require("source-map-js").SourceMapConsumer;
     }
-    if (typeof sourceMapContents === 'string') {
+    if (typeof sourceMapContents === "string") {
       sourceMapContents = JSON.parse(sourceMapContents);
     }
     sourceMap = new SourceMapConsumer(sourceMapContents);
-    return sourceMap.originalPositionFor({line, column});
+    return sourceMap.originalPositionFor({ line, column });
   };
 
-  isFileSync = function(filePath) {
+  isFileSync = function (filePath) {
     try {
       return fs.statSync(filePath).isFile();
-    } catch (error1) {
+    } catch {
       return false;
     }
   };
 
-  convertLine = function(filePath, line, column, sourceMaps = {}) {
+  convertLine = function (filePath, line, column, sourceMaps = {}) {
     var code, codeCachePath, position, source, sourceMapContents, sourceMapPath;
     try {
       if (!(sourceMapContents = sourceMaps[filePath])) {
-        if (path.extname(filePath) === '.js') {
+        if (path.extname(filePath) === ".js") {
           sourceMapPath = `${filePath}.map`;
-          sourceMapContents = fs.readFileSync(sourceMapPath, 'utf8');
+          sourceMapContents = fs.readFileSync(sourceMapPath, "utf8");
         } else {
-          code = fs.readFileSync(filePath, 'utf8');
+          code = fs.readFileSync(filePath, "utf8");
           codeCachePath = getCachePath(code);
           sourceMapContents = getCachedSourceMap(codeCachePath);
           if (sourceMapContents == null) {
@@ -117,42 +131,55 @@
       if (sourceMapContents) {
         sourceMaps[filePath] = sourceMapContents;
         position = getSourceMapPosition(sourceMapContents, Number(line), Number(column));
-        if ((position.line != null) && (position.column != null)) {
-          if (position.source && position.source !== '.') {
-            source = path.resolve(filePath, '..', position.source);
+        if (position.line != null && position.column != null) {
+          if (position.source && position.source !== ".") {
+            source = path.resolve(filePath, "..", position.source);
           } else {
             source = filePath;
           }
           return {
             line: position.line,
             column: position.column,
-            source
+            source,
           };
         }
       }
-    } catch (error1) {}
+    } catch {}
     return null;
   };
 
-  convertStackTrace = function(stackTrace, sourceMaps = {}) {
-    var atLinePattern, column, convertedLines, filePath, i, len, line, mappedLine, match, ref, stackTraceLine;
+  convertStackTrace = function (stackTrace, sourceMaps = {}) {
+    var atLinePattern,
+      column,
+      convertedLines,
+      filePath,
+      i,
+      len,
+      line,
+      mappedLine,
+      match,
+      ref,
+      stackTraceLine;
     if (!stackTrace) {
       return stackTrace;
     }
     convertedLines = [];
     atLinePattern = /^(\s+at .* )\((.*):(\d+):(\d+)\)/;
-    ref = stackTrace.split('\n');
+    ref = stackTrace.split("\n");
     for (i = 0, len = ref.length; i < len; i++) {
       stackTraceLine = ref[i];
-      if (match = atLinePattern.exec(stackTraceLine)) {
+      match = atLinePattern.exec(stackTraceLine);
+      if (match) {
         filePath = match[2];
         line = match[3];
         column = match[4];
-        if (path.extname(filePath) === '.js') {
+        if (path.extname(filePath) === ".js") {
           mappedLine = convertLine(filePath, line, column, sourceMaps);
         }
         if (mappedLine != null) {
-          convertedLines.push(`${match[1]}(${mappedLine.source}:${mappedLine.line}:${mappedLine.column})`);
+          convertedLines.push(
+            `${match[1]}(${mappedLine.source}:${mappedLine.line}:${mappedLine.column})`,
+          );
         } else {
           convertedLines.push(stackTraceLine);
         }
@@ -160,19 +187,18 @@
         convertedLines.push(stackTraceLine);
       }
     }
-    return convertedLines.join('\n');
+    return convertedLines.join("\n");
   };
 
   exports.convertLine = convertLine;
 
   exports.convertStackTrace = convertStackTrace;
 
-  exports.setCacheDirectory = function(newCachePath) {
-    return cachePath = newCachePath;
+  exports.setCacheDirectory = function (newCachePath) {
+    return (cachePath = newCachePath);
   };
 
-  exports.getCacheDirectory = function() {
+  exports.getCacheDirectory = function () {
     return cachePath;
   };
-
 }).call(this);
