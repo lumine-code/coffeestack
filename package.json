@@ -1,6 +1,6 @@
 {
   "name": "@lumine-code/coffeestack",
-  "version": "2.0.0",
+  "version": "1.0.0",
   "description": "Converts JavaScript stack traces to their original CoffeeScript locations.",
   "main": "./index.js",
   "scripts": {
