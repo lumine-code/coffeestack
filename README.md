@@ -2,6 +2,9 @@
 
 Converts JavaScript stack traces to their original CoffeeScript locations.
 
+> [!WARNING]
+> **This package is deprecated.** [Lumine](https://github.com/lumine-code/lumine) no longer depends on this CoffeeScript stack trace converter. This repository is archived and no longer maintained.
+
 ## Features
 
 - **Stack conversion**: maps JavaScript stack frames back to CoffeeScript source locations.
