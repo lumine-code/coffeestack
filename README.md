@@ -2,6 +2,8 @@
 
 Converts JavaScript stack traces to their original CoffeeScript locations.
 
+Fork of [kevinsawicki/coffeestack](https://github.com/kevinsawicki/coffeestack).
+
 > [!WARNING]
 > **This package is deprecated.** [Lumine](https://github.com/lumine-code/lumine) no longer depends on this CoffeeScript stack trace converter. This repository is archived and no longer maintained.
 

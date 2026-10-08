@@ -20,7 +20,7 @@
     "source-map"
   ],
   "author": "lumine-code",
-  "license": "MIT AND BSD-3-Clause",
+  "license": "MIT",
   "publishConfig": {
     "access": "public"
   },
